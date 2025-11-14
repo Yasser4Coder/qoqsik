@@ -7,12 +7,12 @@ from ..embedding import get_embedding
 
 
 
-def search_qdrant(query: str, top_k: int = 4) -> List[Dict[str, Any]]:
+def search_qdrant(query: str, top_k: int = 4, collection_name: str = "sba") -> List[Dict[str, Any]]:
     """Embed the query, search Qdrant, and return a list of hit dicts with text and metadata."""
     client = connect_qdrant()
     vec = get_embedding(query)
 
-    hits = client.search(collection_name=QDRANT_COLLECTION, query_vector=vec, limit=top_k)
+    hits = client.search(collection_name=collection_name, query_vector=vec, limit=top_k)
 
     results: List[Dict[str, Any]] = []
     for h in hits:

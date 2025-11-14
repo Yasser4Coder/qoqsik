@@ -11,6 +11,7 @@ class Settings(BaseSettings):
   allowed_origins: str = Field(alias="ALLOWED_ORIGINS", default="*")
   frontend_url: str = Field(alias="FRONTEND_URL", default="http://localhost:5173")
   qdrant_url: str = Field(alias="QDRANT_URL")
+  qdrant_api_key: str = Field(alias="QDRANT_API_KEY")
 
   encryption_key: str | None = Field(alias="ENCRYPTION_KEY", default=None)
   google_client_id: str | None = Field(alias="GOOGLE_CLIENT_ID", default=None)
