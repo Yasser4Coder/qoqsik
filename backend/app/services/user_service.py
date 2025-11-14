@@ -10,7 +10,9 @@ users_collection: AsyncIOMotorCollection = get_collection("users")
 
 
 async def create_user(data: UserCreate) -> UserPublic:
-  existing = await users_collection.find_one({"email": data.email})
+  # Normalize email to lowercase for consistency
+  email = data.email.lower().strip()
+  existing = await users_collection.find_one({"email": email})
   if existing:
     raise HTTPException(
       status_code=status.HTTP_400_BAD_REQUEST,
@@ -18,7 +20,7 @@ async def create_user(data: UserCreate) -> UserPublic:
     )
   doc = {
     "full_name": data.full_name,
-    "email": data.email,
+    "email": email,
     "password": hash_password(data.password),
     "created_at": datetime.utcnow(),
   }
@@ -32,12 +34,45 @@ async def create_user(data: UserCreate) -> UserPublic:
 
 
 async def authenticate_user(credentials: UserLogin) -> UserPublic:
-  user = await users_collection.find_one({"email": credentials.email})
-  if not user or not verify_password(credentials.password, user["password"]):
+  # Normalize email to lowercase for comparison
+  email = credentials.email.lower().strip()
+  
+  # Try exact match first, then case-insensitive regex match for existing users
+  user = await users_collection.find_one({"email": email})
+  if not user:
+    # Fallback to case-insensitive search for existing users with different casing
+    user = await users_collection.find_one({"email": {"$regex": f"^{email}$", "$options": "i"}})
+  
+  if not user:
     raise HTTPException(
       status_code=status.HTTP_401_UNAUTHORIZED,
       detail="Invalid email or password.",
     )
+  
+  # Normalize stored email to lowercase for consistency
+  if user.get("email") and user["email"].lower() != email:
+    # Update the email in the database to lowercase
+    await users_collection.update_one(
+      {"_id": user["_id"]},
+      {"$set": {"email": email}}
+    )
+    user["email"] = email
+  
+  # Check if password field exists
+  if "password" not in user or not user["password"]:
+    raise HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail="Invalid email or password.",
+    )
+  
+  # Verify password
+  password_valid = verify_password(credentials.password, user["password"])
+  if not password_valid:
+    raise HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail="Invalid email or password.",
+    )
+  
   return UserPublic(
     id=str(user["_id"]),
     full_name=user["full_name"],

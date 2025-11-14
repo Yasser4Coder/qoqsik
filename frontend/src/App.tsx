@@ -6,6 +6,7 @@ import { AddDocumentsPage } from "./pages/AddDocuments.tsx";
 import { DataSourcesPage } from "./pages/DataSources.tsx";
 import { AuthPage } from "./pages/Auth.tsx";
 import { SignupPage } from "./pages/Signup.tsx";
+import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 
 function App() {
   return (
@@ -13,11 +14,46 @@ function App() {
       <Routes>
         <Route path="/" element={<AuthPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/dashboard/subscription" element={<SubscriptionPage />} />
-        <Route path="/dashboard/add-employee" element={<AddEmployeePage />} />
-        <Route path="/dashboard/documents" element={<AddDocumentsPage />} />
-        <Route path="/dashboard/data-sources" element={<DataSourcesPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/subscription"
+          element={
+            <ProtectedRoute>
+              <SubscriptionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/add-employee"
+          element={
+            <ProtectedRoute>
+              <AddEmployeePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/documents"
+          element={
+            <ProtectedRoute>
+              <AddDocumentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/data-sources"
+          element={
+            <ProtectedRoute>
+              <DataSourcesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
@@ -25,4 +61,3 @@ function App() {
 }
 
 export default App;
-

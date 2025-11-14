@@ -6,7 +6,7 @@ import {
   DecorativePanel,
   AuthInput,
 } from "../components/auth/AuthLayout.tsx";
-import { signup } from "../lib/api.ts";
+import { signup, setAuthUser } from "../lib/api.ts";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -25,17 +25,24 @@ export function SignupPage() {
       setError("Passwords do not match.");
       return;
     }
+    if (form.password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
-      await signup({
+      const response = await signup({
         full_name: form.full_name,
         email: form.email,
         password: form.password,
       });
-      navigate("/dashboard");
-    } catch (err) {
-      setError((err as Error).message);
+      setAuthUser(response);
+      navigate("/dashboard", { replace: true });
+    } catch (err: any) {
+      const errorMessage =
+        err?.message || "An error occurred during signup. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

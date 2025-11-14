@@ -24,9 +24,9 @@ export function ChatInput() {
   };
 
   return (
-    <div className="rounded-3xl border border-white/60 bg-white/80 p-4 shadow-panel">
+    <div className="rounded-xl border border-white/60 bg-white/80 p-4 shadow-panel">
       <form
-        className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-inner"
+        className="flex items-center gap-3 rounded-xl bg-white px-4 py-3"
         onSubmit={handleSubmit}
       >
         <button
@@ -52,9 +52,9 @@ export function ChatInput() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-full bg-indigo p-3 text-white shadow-lg disabled:opacity-60"
+          className="rounded-full bg-transparent p-3 text-white shadow-lg disabled:opacity-60"
         >
-          <TbSend size={20} />
+          <TbSend className="text-black" size={20} />
         </button>
       </form>
       {status && <p className="px-2 pt-2 text-xs text-indigo">{status}</p>}

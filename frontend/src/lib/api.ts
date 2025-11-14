@@ -8,26 +8,40 @@ async function request<TResponse, TBody = unknown>(
   method: HttpMethod = "GET",
   body?: TBody,
 ): Promise<TResponse> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Unexpected error");
+    if (!response.ok) {
+      let errorMessage = "An unexpected error occurred";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorData.message || errorMessage;
+      } catch {
+        errorMessage = `Request failed with status ${response.status}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return (await response.json()) as TResponse;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Network error. Please check your connection.");
   }
-
-  return (await response.json()) as TResponse;
 }
 
 export type AuthResponse = {
   id: string;
   full_name: string;
   email: string;
+  created_at: string;
 };
 
 export function signup(payload: {
@@ -40,6 +54,44 @@ export function signup(payload: {
 
 export function login(payload: { email: string; password: string }) {
   return request<AuthResponse, typeof payload>("/auth/login", "POST", payload);
+}
+
+// Store user data in localStorage
+export function setAuthUser(user: AuthResponse): void {
+  localStorage.setItem("auth_user", JSON.stringify(user));
+}
+
+// Get user data from localStorage
+export function getAuthUser(): AuthResponse | null {
+  const stored = localStorage.getItem("auth_user");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored) as AuthResponse;
+  } catch {
+    return null;
+  }
+}
+
+// Clear user data from localStorage
+export function clearAuthUser(): void {
+  localStorage.removeItem("auth_user");
+}
+
+// Check if user is authenticated
+export function isAuthenticated(): boolean {
+  return getAuthUser() !== null;
+}
+
+// Logout user
+export async function logout(): Promise<void> {
+  try {
+    await request<{ message: string }>("/auth/logout", "POST");
+  } catch (error) {
+    // Even if the API call fails, clear local storage
+    console.error("Logout error:", error);
+  } finally {
+    clearAuthUser();
+  }
 }
 
 export type EmployeeResponse = {

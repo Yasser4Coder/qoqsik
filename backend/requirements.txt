@@ -11,7 +11,7 @@ cryptography==43.0.1
 requests==2.32.3
 qdrant-client==1.10.1
 qdrant-client==1.10.1
-sentence-transformers==2.2.2
+sentence-transformers>=3.0.0
 tiktoken==0.8.0
 numpy==1.26.4
 pandas==2.2.3

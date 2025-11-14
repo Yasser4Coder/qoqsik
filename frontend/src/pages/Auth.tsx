@@ -6,7 +6,7 @@ import {
   DecorativePanel,
   AuthInput,
 } from "../components/auth/AuthLayout.tsx";
-import { login } from "../lib/api.ts";
+import { login, setAuthUser } from "../lib/api.ts";
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -19,10 +19,13 @@ export function AuthPage() {
     setLoading(true);
     setError(null);
     try {
-      await login(form);
-      navigate("/dashboard");
-    } catch (err) {
-      setError((err as Error).message);
+      const response = await login(form);
+      setAuthUser(response);
+      navigate("/dashboard", { replace: true });
+    } catch (err: any) {
+      const errorMessage =
+        err?.message || "An error occurred during login. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
