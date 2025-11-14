@@ -4,6 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 
 from ..database import get_collection
 from ..models.chat import ChatMessageCreate, ChatMessagePublic
+from .Qdrant import insert_vector
 
 chat_collection: AsyncIOMotorCollection = get_collection("chat_messages")
 
@@ -14,7 +15,12 @@ async def create_message(payload: ChatMessageCreate) -> ChatMessagePublic:
     "created_at": datetime.utcnow(),
   }
   result = await chat_collection.insert_one(doc)
-  return ChatMessagePublic(id=str(result.inserted_id), **doc)
+  doc_id = str(result.inserted_id)
+  
+  # Insert vector into Qdrant for semantic search/RAG (non-blocking, fails silently if Qdrant not configured)
+  await insert_vector("chat_messages", doc_id, payload.content)
+  
+  return ChatMessagePublic(id=doc_id, **doc)
 
 
 async def list_messages(limit: int = 10) -> List[ChatMessagePublic]:

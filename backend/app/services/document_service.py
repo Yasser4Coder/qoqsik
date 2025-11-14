@@ -4,6 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 
 from ..database import get_collection
 from ..models.document import DocumentCreate, DocumentPublic
+from .Qdrant import insert_vector
 
 documents_collection: AsyncIOMotorCollection = get_collection("documents")
 
@@ -17,7 +18,18 @@ async def add_document(payload: DocumentCreate) -> DocumentPublic:
     "created_at": datetime.utcnow(),
   }
   result = await documents_collection.insert_one(doc)
-  return DocumentPublic(id=str(result.inserted_id), **doc)
+  doc_id = str(result.inserted_id)
+  
+  # Extract searchable text for vector embedding
+  # Combine title and category for semantic search
+  searchable_text = f"{payload.title} {payload.category}"
+  if payload.cloud_link:
+    searchable_text += f" {payload.cloud_link}"
+  
+  # Insert vector into Qdrant for semantic search (non-blocking, fails silently if Qdrant not configured)
+  await insert_vector("documents", doc_id, searchable_text)
+  
+  return DocumentPublic(id=doc_id, **doc)
 
 
 async def list_recent_documents(limit: int = 5) -> List[DocumentPublic]:
