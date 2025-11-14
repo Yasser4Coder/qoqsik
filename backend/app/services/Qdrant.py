@@ -24,6 +24,8 @@ settings = get_settings()
 QDRANT_COLLECTIONS = {
     "documents": "documents",
     "chat_messages": "chat_messages",
+    "users": "users",
+    "employees": "employees",
     # Add more collections as needed
 }
 

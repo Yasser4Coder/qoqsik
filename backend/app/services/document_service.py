@@ -30,7 +30,7 @@ async def add_document(payload: DocumentCreate) -> DocumentPublic:
   await insert_vector("documents", doc_id, searchable_text)
   
   return DocumentPublic(id=doc_id, **doc)
-
+  
 
 async def list_recent_documents(limit: int = 5) -> List[DocumentPublic]:
   cursor = (
