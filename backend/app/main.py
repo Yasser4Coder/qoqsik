@@ -10,6 +10,7 @@ from .controllers import (
   data_source_controller,
   chat_controller,
   integration_controller,
+  rag_controller,
 )
 
 settings = get_settings()
@@ -33,6 +34,7 @@ app.include_router(subscription_controller.router)
 app.include_router(data_source_controller.router)
 app.include_router(chat_controller.router)
 app.include_router(integration_controller.router)
+app.include_router(rag_controller.router)
 
 
 @app.get("/health")
