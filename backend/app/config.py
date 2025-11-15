@@ -11,6 +11,7 @@ class Settings(BaseSettings):
   allowed_origins: str = Field(alias="ALLOWED_ORIGINS", default="*")
   frontend_url: str = Field(alias="FRONTEND_URL", default="http://localhost:5173")
   qdrant_url: str | None = Field(alias="QDRANT_URL", default=None)
+  qdrant_api_key: str | None = Field(alias="QDRANT_API_KEY", default=None)
 
   encryption_key: str | None = Field(alias="ENCRYPTION_KEY", default=None)
   google_client_id: str | None = Field(alias="GOOGLE_CLIENT_ID", default=None)
@@ -18,6 +19,13 @@ class Settings(BaseSettings):
   google_redirect_uri: str | None = Field(alias="GOOGLE_REDIRECT_URI", default=None)
   default_user_id: str = Field(alias="DEFAULT_USER_ID", default="demo-user")
   ocr_api_key: str | None = Field(alias="OCR_API_KEY", default=None)
+  qwen_api_url: str | None = Field(alias="QWEN_API_URL", default=None)
+  qwen_api_key: str | None = Field(alias="QWEN_API_KEY", default=None)
+  qwen_generate_path: str | None = Field(alias="QWEN_GENERATE_PATH", default=None)
+  llm_model: str | None = Field(alias="LLM_MODEL", default=None)
+  qwen_embed_path: str | None = Field(alias="QWEN_EMBED_PATH", default=None)
+  qwen_embed_model: str | None = Field(alias="EMBEDDING_MODEL", default=None)
+
 
   class Config:
     env_file = ".env"

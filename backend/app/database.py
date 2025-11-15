@@ -15,4 +15,7 @@ def get_collection(name: str):
 def connect_qdrant():
   if not settings.qdrant_url:
     raise ValueError("QDRANT_URL is not configured. Please set QDRANT_URL in your .env file to use RAG functionality.")
-  return QdrantClient(url=settings.qdrant_url)
+  # print("QDRANT URL:", settings.qdrant_url)
+  # print("QDRANT KEY:", settings.qdrant_api_key[:5] + "...")
+
+  return QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)

@@ -5,7 +5,6 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from ..database import get_collection
 from ..models.user import UserCreate, UserLogin, UserPublic
 from ..utils.security import hash_password, verify_password
-from .Qdrant import insert_vector
 
 users_collection: AsyncIOMotorCollection = get_collection("users")
 
@@ -26,17 +25,8 @@ async def create_user(data: UserCreate) -> UserPublic:
     "created_at": datetime.utcnow(),
   }
   result = await users_collection.insert_one(doc)
-  doc_id = str(result.inserted_id)
-  
-  # Extract searchable text for vector embedding (for user search functionality)
-  # Note: We don't index passwords for security reasons
-  searchable_text = f"{data.full_name} {email}"
-  
-  # Insert vector into Qdrant for semantic search (non-blocking, fails silently if Qdrant not configured)
-  await insert_vector("users", doc_id, searchable_text)
-  
   return UserPublic(
-    id=doc_id,
+    id=str(result.inserted_id),
     full_name=doc["full_name"],
     email=doc["email"],
     created_at=doc["created_at"],

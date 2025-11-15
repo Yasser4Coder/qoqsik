@@ -1,23 +1,45 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useState, useEffect } from "react";
 import { TbPaperclip, TbMoodSmile, TbSend } from "react-icons/tb";
-import { sendChatMessage } from "../lib/api.ts";
+import { sendChatMessage, type ChatMessageResponse } from "../lib/api.ts";
 
-export function ChatInput() {
-  const [message, setMessage] = useState("");
+type ChatInputProps = {
+  onMessageSent?: (userMessage: string, assistantResponse: ChatMessageResponse) => void;
+  initialMessage?: string;
+  loading?: boolean;
+  setLoading?: (loading: boolean) => void;
+};
+
+export function ChatInput({ onMessageSent, initialMessage, loading: externalLoading, setLoading: setExternalLoading }: ChatInputProps) {
+  const [message, setMessage] = useState(initialMessage || "");
   const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
+  
+  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
+  const setLoading = setExternalLoading || setInternalLoading;
+  
+  // Update message when initialMessage changes
+  useEffect(() => {
+    if (initialMessage) {
+      setMessage(initialMessage);
+    }
+  }, [initialMessage]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || loading) return;
+    
+    const userMessage = message.trim();
     setLoading(true);
     setStatus(null);
+    setMessage(""); // Clear input immediately
+    
     try {
-      await sendChatMessage({ content: message.trim() });
-      setMessage("");
+      const response = await sendChatMessage({ content: userMessage });
       setStatus("Message sent!");
+      onMessageSent?.(userMessage, response);
     } catch (error) {
       setStatus((error as Error).message);
+      setMessage(userMessage); // Restore message on error
     } finally {
       setLoading(false);
     }

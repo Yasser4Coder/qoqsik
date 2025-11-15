@@ -30,6 +30,12 @@ async function request<TResponse, TBody = unknown>(
 
     return (await response.json()) as TResponse;
   } catch (error) {
+    // Handle network errors (Failed to fetch)
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      throw new Error(
+        `Cannot connect to server at ${API_BASE_URL}. Please ensure the backend server is running.`
+      );
+    }
     if (error instanceof Error) {
       throw error;
     }
@@ -172,11 +178,31 @@ export function disconnectConnector(provider: string) {
   return request<{ ok: boolean }>(`/integrations/${provider}`, "DELETE");
 }
 
-export function sendChatMessage(payload: { content: string }) {
-  return request<{ id: string; content: string; created_at: string }, typeof payload>(
+export type ChatMessageResponse = {
+  id: string;
+  content: string;
+  role: "user" | "assistant";
+  user_id?: string | null;
+  conversation_id?: string | null;
+  created_at: string;
+};
+
+export function sendChatMessage(payload: {
+  content: string;
+  user_id?: string;
+  conversation_id?: string;
+}) {
+  // Include user_id from localStorage if available
+  const user = getAuthUser();
+  const messagePayload = {
+    ...payload,
+    user_id: payload.user_id || user?.id || undefined,
+  };
+  
+  return request<ChatMessageResponse, typeof messagePayload>(
     "/chat/messages",
     "POST",
-    payload,
+    messagePayload,
   );
 }
 
